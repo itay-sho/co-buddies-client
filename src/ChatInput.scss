@@ -1,0 +1,21 @@
+.ChatInput {
+  background-color: #f0f0f0;
+
+  .ResizeableTextarea {
+    border-radius: 20px;
+    -webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+
+    padding: 10px 20px;
+
+    border: none;
+    font-weight: lighter;
+  }
+  .send-button-wrapper {
+    margin-left: 10px;
+
+    .send-button {
+      width: 50px;
+    }
+  }
+}
