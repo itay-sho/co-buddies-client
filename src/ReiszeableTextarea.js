@@ -56,6 +56,7 @@ const ResizableTextarea = (props) => {
 
     return (
         <textarea
+            maxLength="500"
             rows={textareaState.rows}
             placeholder='הקלד\י הודעה'
             className='ResizeableTextarea'

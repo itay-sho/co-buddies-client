@@ -8,8 +8,8 @@ import 'bootstrap/dist/css/bootstrap.css';
 const App = () => {
     return (
         <div className="App">
-            <ChatContainer></ChatContainer>
-            <PageFooter></PageFooter>
+            <ChatContainer />
+            <PageFooter />
         </div>
     );
 };
