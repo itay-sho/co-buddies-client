@@ -1,3 +1,31 @@
 .App {
-  background: rgb(214,219,216);
+  //background: rgb(214,219,216);
+  background-color: #e9ebee;
+}
+
+.rtl {
+  direction: rtl;
+}
+
+.no-chat-windows {
+  color: white;
+  font-size: 26px;
+
+  .logo {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .chat-input {
+
+    resize: none;
+    border-radius: 39px 39px 39px 39px;
+
+    -moz-border-radius: 39px 39px 39px 39px;
+    -webkit-border-radius: 39px 39px 39px 39px;
+    border: 0;
+    padding: 10px;
+    max-width: 100%;
+    width: 350px;
+  }
 }

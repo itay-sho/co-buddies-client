@@ -3,7 +3,7 @@ import React from 'react';
 import './PageFooter.scss';
 
 const PageFooter = () => {
-    const github_link = "https://github.com";
+    const github_link = "https://github.com/itay-sho/co-buddies-server";
     const author_link = "mailto:itai.sho@gmail.com?subject=האתר co-buddies שלך";
     return (
         <div className="PageFooter fixed-bottom">
