@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 
 const ResizableTextarea = (props) => {
     const enterAction = props.enterAction;
+    const disabled = props.disabled
     const [textareaState, setTextAreaState] = useState({
         rows: props.rows,
         minRows: props.minRows,
@@ -56,6 +57,7 @@ const ResizableTextarea = (props) => {
 
     return (
         <textarea
+            disabled={disabled}
             maxLength="500"
             rows={textareaState.rows}
             placeholder='הקלד\י הודעה'
