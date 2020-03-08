@@ -26,16 +26,17 @@ const ChatContainer = () => {
         const username = crypto.randomBytes(10).toString('hex');
         const password = crypto.randomBytes(20).toString('hex');
 
-        axios.post('/rest-auth/registration/', {
+        axios.post('/registration/', {
             username: username,
             password1: password,
             password2: password,
-            first_name: formState.fullName,
+            name: formState.fullName,
             reason_to_isolation: formState.reasonToIsolation,
-            age: formState.age
+            age: formState.age,
         }).then(response => {
             if (response.status === 201) {
                 localStorage.setItem('API_KEY', response.data.key);
+                localStorage.setItem('USER_ID', response.data.id);
                 updatePageState('chat');
             } else {
                 alert(response.status);
