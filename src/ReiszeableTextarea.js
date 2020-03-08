@@ -1,14 +1,17 @@
 import React, {useState} from 'react';
 
-const ResizableTextarea = (props) => {
+const ResizableTextarea = React.forwardRef((props, ref) => {
     const enterAction = props.enterAction;
-    const disabled = props.disabled
+    const disabled = props.disabled;
+
     const [textareaState, setTextAreaState] = useState({
         rows: props.rows,
         minRows: props.minRows,
         maxRows: props.maxRows,
+        value: ''
     });
     const [style, setStyle] = useState({resize: "none", width: "100%", lineHeight: '24px', direction: "rtl"});
+    ref.current = [textareaState, setTextAreaState];
 
     const get_direction = (textarea) => {
         if (textarea.value[0] != null && textarea.value[0].search(/[\u0590-\u05FF]/) < 0) {
@@ -17,9 +20,10 @@ const ResizableTextarea = (props) => {
         return "rtl";
     };
 
-    const onEnterPress = (e) => {
+    const onKeyPress = (e) => {
         if(e.keyCode === 13 && e.shiftKey === false) {
             e.preventDefault();
+            const value = e.target.value;
             enterAction();
         }
     };
@@ -52,6 +56,7 @@ const ResizableTextarea = (props) => {
         setTextAreaState({
             ...textareaState,
             rows: currentRows < maxRows ? currentRows : maxRows,
+            value: event.target.value
         });
     };
 
@@ -62,11 +67,12 @@ const ResizableTextarea = (props) => {
             rows={textareaState.rows}
             placeholder='הקלד\י הודעה'
             className='ResizeableTextarea'
-            onKeyDown={onEnterPress}
+            onKeyDown={onKeyPress}
             onChange={handleChange}
             style={style}
+            value={textareaState.value}
         />
     );
-};
+});
 
 export default ResizableTextarea;

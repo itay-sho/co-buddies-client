@@ -9,10 +9,9 @@ import {ChatContext} from "./context/chat-context";
 
 const ChatBox = () => {
     const [messages, updateMessages] = useState([]);
-    // const [namesDictionary, updateNamesDictionary] = useState({0: 'הודעה מערכת'});
     const namesDictionaryRef = useRef({0: 'הודעה מערכת'});
-    const sequenceNumberRef = useRef(1);
     const pendingResponseRef = useRef({});
+    const chatBoxRef = useRef();
     const websocketRef = useRef();
     const chatContext = useContext(ChatContext);
 
@@ -21,11 +20,6 @@ const ChatBox = () => {
         let to_append = {};
         to_append[sequence] = callback;
         pendingResponseRef.current = update(pendingResponseRef.current, {$set:to_append});
-    };
-
-    const getNextSequenceNumber = () => {
-        sequenceNumberRef.current++;
-        return sequenceNumberRef.current
     };
 
     const displayMessage = (message) => {
@@ -44,7 +38,8 @@ const ChatBox = () => {
 
     const randomizeKey = () => crypto.randomBytes(10).toString('hex');
 
-    const generateAdminMessage = (text) => {return {user_id: 0, 'text': text, key: randomizeKey()}};
+    const generateMessage = (user_id, text) => {return {user_id: user_id, 'text': text, key: randomizeKey()}};
+    const generateAdminMessage = text => generateMessage(0, text);
 
     const handleErrorMessage = (message) => {
         switch (message.payload.error_code) {
@@ -79,7 +74,7 @@ const ChatBox = () => {
     };
 
     const sendMatchRequest = () => {
-        const sequenceNumber = getNextSequenceNumber();
+        const sequenceNumber = chatContext.getNextSequenceNumber();
         const match_request = JSON.stringify({
             request_type: 'request_match',
             seq: sequenceNumber,
@@ -118,6 +113,10 @@ const ChatBox = () => {
         chatContext.setConversationId(message.payload.conversationId);
     };
 
+    const onReceiveMessage = (message) => {
+        addToMessageList(generateMessage(message.payload.author_id, message.payload.text))
+    };
+
     const onReceiveDisconnect = (message) => {
         console.log(message.payload);
         console.log(namesDictionaryRef.current);
@@ -125,11 +124,14 @@ const ChatBox = () => {
 
         const userName = namesDictionaryRef.current[message.payload.user_id];
         addToMessageList(generateAdminMessage(`${userName} עזב את השיחה.`));
+
+        chatContext.setConversationId(0);
+        sendMatchRequest();
     };
 
     const wsOnOpen = (event) => {
         const websocket = websocketRef.current;
-        const sequenceNumber = getNextSequenceNumber();
+        const sequenceNumber = chatContext.getNextSequenceNumber();
         const login_request = JSON.stringify({
             request_type: 'authenticate',
             seq: sequenceNumber,
@@ -153,6 +155,8 @@ const ChatBox = () => {
                 return handleErrorMessage(message);
             case "receive_match":
                 return onReceiveMatch(message);
+            case 'receive_message':
+                return onReceiveMessage(message);
             case "disconnect":
                 return onReceiveDisconnect(message);
             default:
@@ -162,20 +166,24 @@ const ChatBox = () => {
 
     useEffect(() => {
         console.log('useEffect');
-        console.log('setting web socket...');
-        const websocket = new WebSocket('ws://127.0.0.1:8000/chat');
-        if (websocketRef.current === undefined) {
-            websocket.onopen = wsOnOpen;
-            websocket.onclose = wsOnClose;
-            websocket.onmessage = wsOnMessage;
-            websocketRef.current = websocket;
 
+        if (websocketRef.current === undefined) {
+            console.log('setting web socket...');
+            websocketRef.current = new WebSocket('ws://127.0.0.1:8000/chat');
             addToMessageList({key: randomizeKey(), user_id: 0,'text': 'מתחבר אל השרת...'});
+
         }
+
+        websocketRef.current.onopen = wsOnOpen;
+        websocketRef.current.onclose = wsOnClose;
+        websocketRef.current.onmessage = wsOnMessage;
+        chatContext.setWebsocket(websocketRef.current);
+
+        chatBoxRef.current.scroll({top: chatBoxRef.current.scrollHeight, behavior: 'smooth'});
     }, [websocketRef, wsOnOpen, wsOnClose, wsOnMessage]);
 
     return (
-        <div className="ChatBox">
+        <div className="ChatBox" ref={chatBoxRef}>
             {messages.map(displayMessage)}
         </div>
     );
