@@ -65,7 +65,7 @@ const ChatContainer = () => {
                             </p>
                             <form onSubmit={handleSubmit}>
                                 <div className="p-2">
-                                    <input type="text" onChange={inputChanged} value={formState.fullName} name="fullName" placeholder="שם מלא" className="chat-input" required={true} />
+                                    <input type="text" onChange={inputChanged} value={formState.fullName} name="fullName" placeholder="שם" className="chat-input" required={true} />
                                 </div>
                                 <div className="p-2">
                                     <input type="number" onChange={inputChanged} value={formState.age} name="age" placeholder="גיל" min="1" className="chat-input" required={true}/>

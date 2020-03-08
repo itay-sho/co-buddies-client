@@ -143,7 +143,7 @@ const ChatBox = () => {
     };
 
     const wsOnClose = (event) => {
-        addToMessageList(generateAdminMessage('התנתקת מהשרת'));
+        addToMessageList(generateAdminMessage('התנתקת מהשרת, נסה לרפרש את הדף'));
     };
 
     const wsOnMessage =(event) => {

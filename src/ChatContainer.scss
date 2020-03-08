@@ -13,5 +13,33 @@
 
     background-color: #0b1e58;
     font-family: "Varela Round" , Arial, monospace;
+    font-size: 26px;
+
+    @media(max-width: 500px) {
+      font-size: 20px;
+    }
+  }
+
+  .no-chat-windows {
+    color: white;
+    margin: 10px;
+
+    .logo {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .chat-input {
+
+      resize: none;
+      border-radius: 39px 39px 39px 39px;
+
+      -moz-border-radius: 39px 39px 39px 39px;
+      -webkit-border-radius: 39px 39px 39px 39px;
+      border: 0;
+      padding: 10px;
+      max-width: 100%;
+      width: 350px;
+    }
   }
 }
