@@ -169,7 +169,7 @@ const ChatBox = () => {
 
         if (websocketRef.current === undefined) {
             console.log('setting web socket...');
-            websocketRef.current = new WebSocket('ws://127.0.0.1:8000/chat');
+            websocketRef.current = new WebSocket(process.env.WEBSOCKET_URL);
             addToMessageList({key: randomizeKey(), user_id: 0,'text': 'מתחבר אל השרת...'});
 
         }
