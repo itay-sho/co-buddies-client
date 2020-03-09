@@ -54,13 +54,18 @@ const ChatBox = () => {
                     }
                 }
                 break;
-            case ErrorCodes.INVALID_TOKEN:
-            case ErrorCodes.USER_INACTIVE:
+            case ErrorCodes.AUTH_FAIL_INVALID_TOKEN:
+            case ErrorCodes.AUTH_FAIL_USER_INACTIVE:
                 addToMessageList(generateAdminMessage('הסיסמה שניתנה שגויה או שהמשתמש נחסם. מתנתק...'));
                 localStorage.removeItem('API_KEY');
                 break;
-            case ErrorCodes.TIMEOUT:
+            case ErrorCodes.AUTHENTICATION_TIMEOUT:
                 addToMessageList(generateAdminMessage('המערכת נכשלה בהתחברות'));
+                break;
+            case ErrorCodes.INACTIVENESS_TIMEOUT:
+                addToMessageList(generateAdminMessage('מתנתק בעקבות חוסר פעילות...'));
+                // leaving conversation
+                chatContext.setConversationId(0);
                 break;
             default:
                 addToMessageList(generateAdminMessage(`Unknown error: ${message.payload.error_code} ${message.payload.error_message}`));
@@ -82,6 +87,7 @@ const ChatBox = () => {
         });
 
         websocketRef.current.send(match_request);
+        console.log('match request sent!');
         addPendingResponse(sequenceNumber, onMatchRequest);
     };
 
@@ -110,7 +116,7 @@ const ChatBox = () => {
 
         addToMessageList(generateAdminMessage('אתה מדבר עם ' + attendees));
 
-        chatContext.setConversationId(message.payload.conversationId);
+        chatContext.setConversationId(message.payload.conversation_id);
     };
 
     const onReceiveMessage = (message) => {
