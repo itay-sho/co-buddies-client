@@ -5,12 +5,12 @@ import './Message.scss';
 const Message = (props) => {
     const text = props.text;
     const author = props.author;
-    const user_id = props.user_id;
-    const stored_user_id = localStorage.getItem('USER_ID');
-    const message_extra_classes = (user_id.toString() === stored_user_id) ? "message-self": "message-other";
+    const userId = props.user_id;
+    const storedUserId = localStorage.getItem('USER_ID');
+    const messageExtraClasses = (userId.toString() === storedUserId) ? "message-self": "message-other";
 
     const extra_style = {};
-    if (user_id === 0) {
+    if (userId === 0) {
         extra_style['color'] = 'red';
     }
 
@@ -23,7 +23,7 @@ const Message = (props) => {
 
 
     return (
-        <div className={"Message " + message_extra_classes}>
+        <div className={"Message " + messageExtraClasses}>
             <div className="message-author" style={extra_style}>
                 {[author]}
             </div>

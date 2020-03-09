@@ -6,14 +6,17 @@ import ErrorCodes from './ErrorCodes'
 import update from 'immutability-helper';
 import crypto from "crypto";
 import {ChatContext} from "./context/chat-context";
+import soundManger from 'soundmanager2'
 
 const ChatBox = () => {
     const [messages, updateMessages] = useState([]);
+    const [sound, setSound] = useState(null)
     const namesDictionaryRef = useRef({0: 'הודעת מערכת'});
     const pendingResponseRef = useRef({});
     const chatBoxRef = useRef();
     const websocketRef = useRef();
     const chatContext = useContext(ChatContext);
+    const storedUserId = localStorage.getItem('USER_ID');
 
     const addPendingResponse = (sequence, callback) => {
         console.log('Adding!');
@@ -120,7 +123,10 @@ const ChatBox = () => {
     };
 
     const onReceiveMessage = (message) => {
-        addToMessageList(generateMessage(message.payload.author_id, message.payload.text))
+        if (sound !== null && message.payload.author_id.toString() !== storedUserId) {
+            sound.play();
+        }
+        addToMessageList(generateMessage(message.payload.author_id, message.payload.text));
     };
 
     const onReceiveDisconnect = (message) => {
@@ -175,9 +181,9 @@ const ChatBox = () => {
 
         if (websocketRef.current === undefined) {
             console.log('setting web socket...');
+
             websocketRef.current = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
             addToMessageList({key: randomizeKey(), user_id: 0,'text': 'מתחבר אל השרת...'});
-
         }
 
         websocketRef.current.onopen = wsOnOpen;
@@ -187,6 +193,17 @@ const ChatBox = () => {
 
         chatBoxRef.current.scroll({top: chatBoxRef.current.scrollHeight, behavior: 'smooth'});
     }, [websocketRef, wsOnOpen, wsOnClose, wsOnMessage]);
+
+    useEffect(() => {
+        soundManger.soundManager.onready(() => {
+            if (sound === null) {
+                const newSound = soundManger.soundManager.createSound({
+                    url: `${process.env.PUBLIC_URL}/new-message.wav`
+                });
+                setSound(newSound);
+            }
+        });
+    }, []);
 
     const style = {
         backgroundImage: `url(${process.env.PUBLIC_URL}/chat_bg.png)`
