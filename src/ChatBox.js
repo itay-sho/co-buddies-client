@@ -9,7 +9,7 @@ import {ChatContext} from "./context/chat-context";
 
 const ChatBox = () => {
     const [messages, updateMessages] = useState([]);
-    const namesDictionaryRef = useRef({0: 'הודעה מערכת'});
+    const namesDictionaryRef = useRef({0: 'הודעת מערכת'});
     const pendingResponseRef = useRef({});
     const chatBoxRef = useRef();
     const websocketRef = useRef();
@@ -169,7 +169,7 @@ const ChatBox = () => {
 
         if (websocketRef.current === undefined) {
             console.log('setting web socket...');
-            websocketRef.current = new WebSocket(process.env.WEBSOCKET_URL);
+            websocketRef.current = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
             addToMessageList({key: randomizeKey(), user_id: 0,'text': 'מתחבר אל השרת...'});
 
         }
@@ -182,8 +182,12 @@ const ChatBox = () => {
         chatBoxRef.current.scroll({top: chatBoxRef.current.scrollHeight, behavior: 'smooth'});
     }, [websocketRef, wsOnOpen, wsOnClose, wsOnMessage]);
 
+    const style = {
+        backgroundImage: `url(${process.env.PUBLIC_URL}/chat_bg.png)`
+    };
+
     return (
-        <div className="ChatBox" ref={chatBoxRef}>
+        <div className="ChatBox" ref={chatBoxRef} style={style}>
             {messages.map(displayMessage)}
         </div>
     );

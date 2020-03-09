@@ -6,7 +6,7 @@ import * as serviceWorker from './serviceWorker';
 import axios from 'axios'
 import ChatContextProvider from "./context/chat-context";
 
-axios.defaults.baseURL = process.env.PUBLIC_URL;
+axios.defaults.baseURL = process.env.REACT_APP_API_BASE_URL;
 
 ReactDOM.render(
     <ChatContextProvider>
