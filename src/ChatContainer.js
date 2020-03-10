@@ -4,7 +4,7 @@ import ChatBox from "./ChatBox";
 import './ChatContainer.scss';
 import ChatInput from "./ChatInput";
 import axios from  'axios';
-import crypto from 'crypto'
+import crypto from 'crypto';
 
 const ChatContainer = () => {
     const [pageState, updatePageState] = useState(localStorage.getItem('API_KEY') !== null ? 'chat': 'welcome');

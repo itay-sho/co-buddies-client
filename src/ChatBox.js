@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useContext, useEffect, useRef, useState} from 'react';
 
 import './ChatBox.scss';
 import Message from "./Message";
@@ -7,10 +7,12 @@ import update from 'immutability-helper';
 import crypto from "crypto";
 import {ChatContext} from "./context/chat-context";
 import soundManger from 'soundmanager2'
+import * as firebase from "firebase/app";
+import "firebase/messaging";
 
 const ChatBox = () => {
     const [messages, updateMessages] = useState([]);
-    const [sound, setSound] = useState(null)
+    const [sound, setSound] = useState(null);
     const namesDictionaryRef = useRef({0: 'הודעת מערכת'});
     const pendingResponseRef = useRef({});
     const chatBoxRef = useRef();
@@ -97,6 +99,7 @@ const ChatBox = () => {
     const onLoginSuccess = () => {
         addToMessageList(generateAdminMessage('התחברת בהצלחה!'));
         sendMatchRequest();
+        getPushNotificationKey();
     };
 
     const onMatchRequest = () => {
@@ -141,7 +144,7 @@ const ChatBox = () => {
         sendMatchRequest();
     };
 
-    const wsOnOpen = (event) => {
+    const wsOnOpen = () => {
         const websocket = websocketRef.current;
         const sequenceNumber = chatContext.getNextSequenceNumber();
         const login_request = JSON.stringify({
@@ -154,7 +157,7 @@ const ChatBox = () => {
         addPendingResponse(sequenceNumber, onLoginSuccess);
     };
 
-    const wsOnClose = (event) => {
+    const wsOnClose = () => {
         addToMessageList(generateAdminMessage('התנתקת מהשרת, נסה לרפרש את הדף'));
     };
 
@@ -175,6 +178,33 @@ const ChatBox = () => {
                 return handleUnknownMessage(message);
         }
     };
+
+    const getPushNotificationKey = useCallback(() => {
+        const messaging = firebase.messaging();
+        messaging.getToken()
+            .then((token) =>{
+                console.log('token:', token);
+
+                const sequenceNumber = chatContext.getNextSequenceNumber();
+
+                let message = JSON.stringify({
+                    request_type: 'set_pn_token',
+                    seq: sequenceNumber,
+                    payload: {
+                        token: token
+                    }
+                });
+
+                chatContext.websocket.send(message);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+
+        messaging.onMessage((payload) => {
+            console.log('message', payload)
+        });
+    }, [chatContext]);
 
     useEffect(() => {
         console.log('useEffect');
