@@ -13,6 +13,7 @@ import "firebase/messaging";
 const ChatBox = () => {
     const [messages, updateMessages] = useState([]);
     const [sound, setSound] = useState(null);
+    const [pendingMatchRequestId, setPendingMatchRequestId] = useState(null);
     const namesDictionaryRef = useRef({0: 'הודעת מערכת'});
     const pendingResponseRef = useRef({});
     const chatBoxRef = useRef();
@@ -21,10 +22,14 @@ const ChatBox = () => {
     const storedUserId = localStorage.getItem('USER_ID');
 
     const addPendingResponse = (sequence, callback) => {
-        console.log('Adding!');
+        console.log('Adding pending response!');
         let to_append = {};
         to_append[sequence] = callback;
         pendingResponseRef.current = update(pendingResponseRef.current, {$set:to_append});
+    };
+    const removePendingResponse = (pending_id) => {
+        console.log('Removing pending response!');
+        pendingResponseRef.current = update(pendingResponseRef.current, {$unset: [pending_id]});
     };
 
     const displayMessage = (message) => {
@@ -59,7 +64,7 @@ const ChatBox = () => {
                     console.dir(pendingResponseRef.current);
                     console.log(message.payload.response_to);
                     if (message.payload.response_to in pendingResponseRef.current) {
-                        pendingResponseRef.current[message.payload.response_to]();
+                        onCallbackCalled(pendingResponseRef.current[message.payload.response_to], message);
                     } else {
                         console.log('got a success message for seq: ' + message.payload.response_to);
                     }
@@ -89,7 +94,15 @@ const ChatBox = () => {
         addToMessageList(generateAdminMessage('הודעה לא ידועה! :' + JSON.stringify(message)));
     };
 
+    const has_pending_match_requests = () => {
+        return pendingMatchRequestId !== null
+    };
+
     const sendMatchRequest = () => {
+        if (has_pending_match_requests()) {
+            return;
+        }
+
         const sequenceNumber = chatContext.getNextSequenceNumber();
         const match_request = JSON.stringify({
             request_type: 'request_match',
@@ -102,14 +115,45 @@ const ChatBox = () => {
         addPendingResponse(sequenceNumber, onMatchRequest);
     };
 
+    const sendUnmatchRequest = () => {
+        if (!has_pending_match_requests()) {
+            return;
+        }
+
+        const sequenceNumber = chatContext.getNextSequenceNumber();
+        const match_request = JSON.stringify({
+            request_type: 'unrequest_match',
+            seq: sequenceNumber,
+            payload: {}
+        });
+
+        websocketRef.current.send(match_request);
+        console.log('unmatch request sent!');
+        addPendingResponse(sequenceNumber, onUnmatchRequest);
+    };
+
+    const onCallbackCalled = (callback, message) => {
+        removePendingResponse(message.payload.response_to);
+        callback(message)
+    };
+
     const onLoginSuccess = () => {
         addToMessageList(generateAdminMessage('התחברת בהצלחה!'));
         sendMatchRequest();
         getPushNotificationKey();
     };
 
-    const onMatchRequest = () => {
-        addToMessageList(generateAdminMessage('מחפש פרטנרים לשיחה...'));
+    const onMatchRequest = (message) => {
+        if (message.payload.error_code === 0) {
+            addToMessageList(generateAdminMessage('מחפש פרטנרים לשיחה...'));
+            addPendingResponse(message.payload.response_to, onReceiveMatch);
+            setPendingMatchRequestId(message.payload.reponse_to);
+        }
+    };
+
+    const onUnmatchRequest = () => {
+        addToMessageList(generateAdminMessage('בקשתך להשאר בלובי התקבלה. לא מחפש פרטנרים'));
+        setPendingMatchRequestId(null);
     };
 
     const onReceiveMatch = (message) => {
@@ -128,6 +172,9 @@ const ChatBox = () => {
 
         if (message.payload.conversation_id === 1) {
             addToMessageList(generateAdminMessage('נכנסת ללובי'));
+        } else {
+            // a real (not lobby) match was found, so the match request isn't pending anymore
+            setPendingMatchRequestId(null);
         }
 
         if (attendees.length >= 1) {
@@ -212,10 +259,7 @@ const ChatBox = () => {
         const messaging = firebase.messaging();
         messaging.getToken()
             .then((token) =>{
-                console.log('token:', token);
-
                 const sequenceNumber = chatContext.getNextSequenceNumber();
-
                 let message = JSON.stringify({
                     request_type: 'set_pn_token',
                     seq: sequenceNumber,
@@ -236,8 +280,6 @@ const ChatBox = () => {
     }, [chatContext]);
 
     useEffect(() => {
-        console.log('useEffect');
-
         if (websocketRef.current === undefined) {
             console.log('setting web socket...');
 
@@ -252,6 +294,17 @@ const ChatBox = () => {
 
         chatBoxRef.current.scroll({top: chatBoxRef.current.scrollHeight, behavior: 'smooth'});
     }, [websocketRef, wsOnOpen, wsOnClose, wsOnMessage]);
+
+    useEffect(() => {
+        if (chatContext.shouldRequestMatch) {
+            if (chatContext.conversationId === 1) {
+                sendMatchRequest();
+            }
+        } else {
+            console.log('sending unmatch request');
+            sendUnmatchRequest();
+        }
+    }, [chatContext.shouldRequestMatch, chatContext.conversationId]);
 
     useEffect(() => {
         soundManger.soundManager.onready(() => {

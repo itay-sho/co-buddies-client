@@ -29,6 +29,10 @@ const ChatInput = () => {
         chatContext.websocket.send(message);
     };
 
+    const updateRequestMatchCheckbox = (event) => {
+        chatContext.setShouldRequestMatch(event.target.checked);
+    };
+
     let conversationType;
     let conversationTypeContainer = null;
     switch (chatContext.conversationId) {
@@ -43,18 +47,25 @@ const ChatInput = () => {
     }
     if (conversationType !== null) {
         conversationTypeContainer = (
-            <div className="px-2 chat-type">
-                אתה נמצא כעת ב
-                <b>
-                    {conversationType}
-                </b>
+            <div className="row m-0 chat-type">
+                <div className="px-2 ml-auto col-6 text-left">
+                    <label className="form-check-label" htmlFor="request_match_checkbox">
+                        <b>חפש שיחה אישית</b>
+                    </label>
+                    <input className="form-check-input ml-1" type="checkbox" id="request_match_checkbox" checked={chatContext.shouldRequestMatch} onChange={updateRequestMatchCheckbox} />
+                </div>
+                <div className="px-2 mr-auto col-6 text-right">
+                    אתה נמצא כעת ב
+                    <b>
+                        {conversationType}
+                    </b>
+                </div>
             </div>
         );
     }
 
 
     return (
-
         <div className="ChatInput mt-auto">
             {conversationTypeContainer}
             <div className="p-2 d-flex">
