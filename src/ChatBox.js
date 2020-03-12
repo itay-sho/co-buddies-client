@@ -185,6 +185,7 @@ const ChatBox = () => {
 
     const wsOnClose = () => {
         addToMessageList(generateAdminMessage('התנתקת מהשרת, נסה לרפרש את הדף'));
+        chatContext.setConversationId(-1);
     };
 
     const wsOnMessage =(event) => {

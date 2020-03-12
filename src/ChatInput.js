@@ -30,26 +30,33 @@ const ChatInput = () => {
     };
 
     let conversationType;
+    let conversationTypeContainer = null;
     switch (chatContext.conversationId) {
         case 1:
             conversationType = 'חדר המתנה';
             break;
         case -1:
-            conversationType = 'טעינה';
+            conversationType = null;
             break;
         default:
             conversationType = 'שיחה פרטית';
     }
-
-    return (
-
-        <div className="ChatInput mt-auto">
+    if (conversationType !== null) {
+        conversationTypeContainer = (
             <div className="px-2 chat-type">
                 אתה נמצא כעת ב
                 <b>
                     {conversationType}
                 </b>
             </div>
+        );
+    }
+
+
+    return (
+
+        <div className="ChatInput mt-auto">
+            {conversationTypeContainer}
             <div className="p-2 d-flex">
                 <ResizableTextarea ref={textareaRef} rows="1" minRows="1" maxRows="5" enterAction={sendMessage} disabled={disabled} />
                 <div className="p2 d-flex align-items-center send-button-wrapper">
