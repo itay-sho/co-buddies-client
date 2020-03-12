@@ -41,6 +41,12 @@ const ChatBox = () => {
         });
     };
 
+    const clearMessagesList = () => {
+      updateMessages(() => {
+          return [];
+      });
+    };
+
     const randomizeKey = () => crypto.randomBytes(10).toString('hex');
 
     const generateMessage = (user_id, text) => {return {user_id: user_id, 'text': text, key: randomizeKey()}};
@@ -70,7 +76,7 @@ const ChatBox = () => {
             case ErrorCodes.INACTIVENESS_TIMEOUT:
                 addToMessageList(generateAdminMessage('מתנתק בעקבות חוסר פעילות...'));
                 // leaving conversation
-                chatContext.setConversationId(0);
+                chatContext.setConversationId(-1);
                 break;
             default:
                 addToMessageList(generateAdminMessage(`Unknown error: ${message.payload.error_code} ${message.payload.error_message}`));
@@ -107,12 +113,10 @@ const ChatBox = () => {
     };
 
     const onReceiveMatch = (message) => {
-        const userID = localStorage.getItem('USER_ID');
-        let attendees = '';
-        console.log(message.payload.attendees);
+        let attendees = [];
         for (let [attendee_id, attendee_name] of Object.entries(message.payload.attendees)) {
-            if (userID !== attendee_id) {
-                attendees += attendee_name;
+            if (storedUserId !== attendee_id) {
+                attendees.push(attendee_name);
             }
 
             let newNameDict = {...namesDictionaryRef.current};
@@ -120,7 +124,15 @@ const ChatBox = () => {
             namesDictionaryRef.current = newNameDict;
         }
 
-        addToMessageList(generateAdminMessage('אתה מדבר עם ' + attendees));
+        clearMessagesList();
+
+        if (message.payload.conversation_id === 1) {
+            addToMessageList(generateAdminMessage('נכנסת ללובי'));
+        }
+
+        if (attendees.length >= 1) {
+            addToMessageList(generateAdminMessage('אתה מדבר עם ' + attendees.join(', ')));
+        }
 
         chatContext.setConversationId(message.payload.conversation_id);
     };
@@ -132,16 +144,30 @@ const ChatBox = () => {
         addToMessageList(generateMessage(message.payload.author_id, message.payload.text));
     };
 
-    const onReceiveDisconnect = (message) => {
+    const onReceiveLeave = (message) => {
         console.log(message.payload);
         console.log(namesDictionaryRef.current);
         console.log(namesDictionaryRef.current[message.payload.user_id]);
 
         const userName = namesDictionaryRef.current[message.payload.user_id];
-        addToMessageList(generateAdminMessage(`${userName} עזב את השיחה.`));
+        addToMessageList(generateAdminMessage(`${userName} עזב את השיחה`));
 
-        chatContext.setConversationId(0);
-        sendMatchRequest();
+        if (chatContext.conversationId !== 1) {
+            // moving to lobby
+            sendMatchRequest();
+        }
+    };
+
+    const onReceiveJoin = (message) => {
+        console.log("connect message: ", message);
+        const userId = message.payload.user_id;
+        const name = message.payload.name;
+        let newNameDict = {...namesDictionaryRef.current};
+        newNameDict[userId] = name;
+        namesDictionaryRef.current = newNameDict;
+        if (userId.toString() !== storedUserId) {
+            addToMessageList(generateAdminMessage(`${name} הצטרף לשיחה`));
+        }
     };
 
     const wsOnOpen = () => {
@@ -172,8 +198,10 @@ const ChatBox = () => {
                 return onReceiveMatch(message);
             case 'receive_message':
                 return onReceiveMessage(message);
-            case "disconnect":
-                return onReceiveDisconnect(message);
+            case "leave":
+                return onReceiveLeave(message);
+            case "join":
+                return onReceiveJoin(message);
             default:
                 return handleUnknownMessage(message);
         }

@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 
 export const ChatContext = React.createContext({
-    conversationId: 0,
+    conversationId: -1,
     setConversationId: () => {},
     websocket: null,
     setWebsocket: () => {},
@@ -9,7 +9,7 @@ export const ChatContext = React.createContext({
 });
 
 const ChatContextProvider = props => {
-    const [conversationId, setConversationId] = useState(0);
+    const [conversationId, setConversationId] = useState(-1);
     const [websocket, setWebsocket] = useState(null);
     const [sequenceNumber, setSequenceNumber] = useState(1);
 

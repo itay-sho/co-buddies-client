@@ -6,9 +6,8 @@ import {ChatContext} from "./context/chat-context";
 
 const ChatInput = () => {
     const chatContext = useContext(ChatContext);
-    const disabled = chatContext.conversationId === 0;
+    const disabled = chatContext.conversationId === -1;
     const textareaRef = useRef();
-
     const sendMessage = () => {
         const [textareaState, updateTextareaState] = textareaRef.current;
         const value = textareaState.value;
@@ -30,9 +29,27 @@ const ChatInput = () => {
         chatContext.websocket.send(message);
     };
 
+    let conversationType;
+    switch (chatContext.conversationId) {
+        case 1:
+            conversationType = 'חדר המתנה';
+            break;
+        case -1:
+            conversationType = 'טעינה';
+            break;
+        default:
+            conversationType = 'שיחה פרטית';
+    }
+
     return (
 
         <div className="ChatInput mt-auto">
+            <div className="px-2 chat-type">
+                אתה נמצא כעת ב
+                <b>
+                    {conversationType}
+                </b>
+            </div>
             <div className="p-2 d-flex">
                 <ResizableTextarea ref={textareaRef} rows="1" minRows="1" maxRows="5" enterAction={sendMessage} disabled={disabled} />
                 <div className="p2 d-flex align-items-center send-button-wrapper">

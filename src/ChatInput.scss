@@ -1,6 +1,10 @@
 .ChatInput {
   background-color: #f0f0f0;
 
+  .chat-type {
+    text-align: right;
+    font-size: 15px;
+  }
   .ResizeableTextarea {
     border-radius: 20px;
 
