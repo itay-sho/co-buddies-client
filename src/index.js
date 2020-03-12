@@ -36,9 +36,15 @@ const firebaseConfig = {
 // we are rendering react regardless if the serviceworker registration succeeds. the reason that we do that
 // from the beginning is there is a race condition between the useServiceWorker and the getToken call in the react dom
 firebase.initializeApp(firebaseConfig);
-navigator.serviceWorker.register(`${process.env.PUBLIC_URL}/firebase-messaging-sw.js`).then(registration => {
-    firebase.messaging().useServiceWorker(registration);
+let was_react_dom_rendered = false;
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register(`${process.env.PUBLIC_URL}/firebase-messaging-sw.js`).then(registration => {
+        firebase.messaging().useServiceWorker(registration);
+        render_react_dom();
+        was_react_dom_rendered = true;
+    });
+}
+if (!was_react_dom_rendered) {
     render_react_dom();
-}).catch(() => {
-    render_react_dom();
-});
+    was_react_dom_rendered = true;
+}

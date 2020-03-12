@@ -13,14 +13,21 @@
     font-family: "Varela Round" , Arial, monospace;
     font-size: 26px;
 
-    @media(max-width: 500px) {
+    @media screen and (max-width: 500px) {
       font-size: 20px;
+    }
+    @media screen and (max-width: 320px) {
+      font-size: 15px;
+      .chat-input {
+        padding: 5px !important;
+      }
     }
   }
 
   .no-chat-windows {
     color: white;
     margin: 10px;
+    overflow-y: auto;
 
     .logo {
       max-width: 100%;
