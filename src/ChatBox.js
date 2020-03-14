@@ -141,8 +141,21 @@ const ChatBox = () => {
 
     const onLoginSuccess = () => {
         addToMessageList(generateAdminMessage('התחברת בהצלחה!'));
-        sendMatchRequest();
+        sendJoinToLobbyRequest();
         getPushNotificationKey();
+    };
+
+    const sendJoinToLobbyRequest = () => {
+        const sequenceNumber = chatContext.getNextSequenceNumber();
+        const join_lobby_request = JSON.stringify({
+            request_type: 'join_lobby',
+            seq: sequenceNumber,
+            payload: {}
+        });
+
+        websocketRef.current.send(join_lobby_request);
+        console.log('lobby join request sent!');
+        addPendingResponse(sequenceNumber, onJoinLobbyResponse);
     };
 
     const onMatchRequest = (message) => {
@@ -193,17 +206,23 @@ const ChatBox = () => {
         addToMessageList(generateMessage(message.payload.author_id, message.payload.text, message.payload.time));
     };
 
+    const onJoinLobbyResponse = (message) => {
+        if (message.payload.error_code === 0) {
+            addToMessageList(generateAdminMessage('ממתין לכניסה ללובי...'));
+        }
+    };
+
     const onReceiveLeave = (message) => {
         console.log(message.payload);
         console.log(namesDictionaryRef.current);
         console.log(namesDictionaryRef.current[message.payload.user_id]);
 
         const userName = namesDictionaryRef.current[message.payload.user_id];
-        addToMessageList(generateAdminMessage(`${userName} עזבה את השיחה`));
+        addToMessageList(generateAdminMessage(`${userName} עזב/ה את השיחה`));
 
         if (chatContext.conversationId !== 1) {
             // moving to lobby
-            sendMatchRequest();
+            sendJoinToLobbyRequest();
         }
     };
 
@@ -215,8 +234,13 @@ const ChatBox = () => {
         newNameDict[userId] = name;
         namesDictionaryRef.current = newNameDict;
         if (userId.toString() !== storedUserId) {
-            addToMessageList(generateAdminMessage(`${name} הצטרףה לשיחה`));
+            addToMessageList(generateAdminMessage(`${name} הצטרף/ה לשיחה`));
         }
+    };
+
+    const onConversationClosed = () => {
+        addToMessageList(generateAdminMessage('השיחה נסגרה'));
+        sendJoinToLobbyRequest();
     };
 
     const wsOnOpen = () => {
@@ -233,7 +257,7 @@ const ChatBox = () => {
     };
 
     const wsOnClose = () => {
-        addToMessageList(generateAdminMessage('התנתקת מהשרת, נסהי לרפרש את הדף'));
+        addToMessageList(generateAdminMessage('התנתקת מהשרת, נסה/י לרפרש את הדף'));
         chatContext.setConversationId(-1);
     };
 
@@ -252,6 +276,8 @@ const ChatBox = () => {
                 return onReceiveLeave(message);
             case "join":
                 return onReceiveJoin(message);
+            case "conversation_closed":
+                return onConversationClosed(message);
             default:
                 return handleUnknownMessage(message);
         }
