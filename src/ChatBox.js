@@ -199,7 +199,7 @@ const ChatBox = () => {
         console.log(namesDictionaryRef.current[message.payload.user_id]);
 
         const userName = namesDictionaryRef.current[message.payload.user_id];
-        addToMessageList(generateAdminMessage(`${userName} עזב את השיחה`));
+        addToMessageList(generateAdminMessage(`${userName} עזבה את השיחה`));
 
         if (chatContext.conversationId !== 1) {
             // moving to lobby
@@ -215,7 +215,7 @@ const ChatBox = () => {
         newNameDict[userId] = name;
         namesDictionaryRef.current = newNameDict;
         if (userId.toString() !== storedUserId) {
-            addToMessageList(generateAdminMessage(`${name} הצטרף לשיחה`));
+            addToMessageList(generateAdminMessage(`${name} הצטרףה לשיחה`));
         }
     };
 
@@ -233,7 +233,7 @@ const ChatBox = () => {
     };
 
     const wsOnClose = () => {
-        addToMessageList(generateAdminMessage('התנתקת מהשרת, נסה לרפרש את הדף'));
+        addToMessageList(generateAdminMessage('התנתקת מהשרת, נסהי לרפרש את הדף'));
         chatContext.setConversationId(-1);
     };
 
