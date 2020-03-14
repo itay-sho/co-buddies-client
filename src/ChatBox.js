@@ -326,7 +326,7 @@ const ChatBox = () => {
     return (
         <div className="ChatBox" ref={chatBoxRef} style={style}>
             {messages.map(displayMessage)}
-    </div>
+        </div>
     );
 };
 
