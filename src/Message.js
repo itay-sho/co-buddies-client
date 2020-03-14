@@ -23,9 +23,9 @@ const Message = (props) => {
     };
 
     const format_time = (epoch_time) => {
-        var timezone_offset = new Date().getTimezoneOffset() * 60
-        var message_time = (new Date((epoch_time.time - timezone_offset) * 1000))
-        return "נשלח " + message_time.getHours() + ":" + message_time.getMinutes() + ":" + message_time.getSeconds()
+        var timezone_offset = new Date().getTimezoneOffset() * 60;
+        var message_time = (new Date((epoch_time.time - timezone_offset) * 1000));
+        return "נשלח " + message_time.getHours() + ":" + message_time.getMinutes() + ":" + message_time.getSeconds();
     };
 
 

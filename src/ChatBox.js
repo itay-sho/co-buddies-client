@@ -57,7 +57,7 @@ const ChatBox = () => {
     const generateMessage = (user_id, text, time) => {return {user_id: user_id, 'text': text, time:time, key: randomizeKey()}};
     // Date.getTime/1000 - get current time, convert to seconds.
     // Date.getTimezoneOffset is in minutes so multiply by 60 to get seconds.
-    const generateAdminMessage = text => generateMessage(0, text, (new Date().getTime()/1000) + new Date().getTimezoneOffset()*60);
+    const generateAdminMessage = text => generateMessage(0, text, (new Date().getTime()/1000));
 
     const handleErrorMessage = (message) => {
         switch (message.payload.error_code) {
